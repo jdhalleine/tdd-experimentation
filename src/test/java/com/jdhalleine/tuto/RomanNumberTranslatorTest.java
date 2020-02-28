@@ -8,6 +8,7 @@ public class RomanNumberTranslatorTest {
     @Test
     public void emptyStringShouldReturnZero(){
        Assertions.assertEquals(0, RomanNumberTranslator.translate(""));
+
     }
 
     @Test
