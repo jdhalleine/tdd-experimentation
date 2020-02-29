@@ -55,12 +55,10 @@ public class ChuckFactsApiTest {
         Flux<Joke> stringFlux = jokeMono1.concatWith(jokeMono2);
         stringFlux.subscribe(joke -> System.out.println(joke));
 
-        Flux.interval(Duration.ofSeconds(1)).flatMap(aLong -> {
-            //Mono<String> s = retrieve.bodyToMono(String.class);
+        Flux.interval(Duration.ofSeconds(1))
+                .flatMap(aLong -> {
             return retrieve.bodyToMono(Joke.class);
-        })//.doOnNext(o -> System.out.println(o.getValue()))
-                .log();
-                //.subscribe(joke -> System.out.println(joke.getValue()));
+        }).subscribe(joke -> System.out.println(joke.getValue()));
 
         Thread.sleep(5000);
         //.collectList().block();
@@ -128,6 +126,11 @@ public class ChuckFactsApiTest {
                 .doOnNext(joke -> System.out.println("From do on Next" + joke.getValue()))
                 .log()
                 .subscribe(System.out::println);
+
+    }
+
+    @Test
+    public void testMonoNew(){
 
     }
 
