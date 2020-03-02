@@ -4,12 +4,21 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpMethod;
+import org.springframework.util.function.SupplierUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Scheduler;
+import reactor.core.scheduler.Schedulers;
+import reactor.test.StepVerifier;
 
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
+
+import static java.util.List.*;
 
 public class ChuckFactsApiTest {
 
@@ -20,19 +29,19 @@ public class ChuckFactsApiTest {
                 .baseUrl("https://api.chucknorris.io")
                 .build();
 
-        WebClient.RequestBodySpec uri1 = client3
+        WebClient.RequestBodySpec request1 = client3
                 .method(HttpMethod.GET)
                 .uri("/jokes/random");
 
 
-        WebClient.RequestBodySpec uri2 = client3
+        WebClient.RequestBodySpec request2 = client3
                 .method(HttpMethod.GET)
                 .uri("/jokes/random");
 
-        WebClient.ResponseSpec retrieve = uri1.retrieve();
-        WebClient.ResponseSpec retrieve2 = uri2.retrieve();
+        WebClient.ResponseSpec response1 = request1.retrieve();
+        WebClient.ResponseSpec response2 = request2.retrieve();
 
-        Mono<String> stringMono = retrieve.bodyToMono(String.class);
+        Mono<String> stringMono = response1.bodyToMono(String.class);
         Mono<Joke> jokeMono1 = stringMono.map(s -> {
             try {
                 return (Joke) new ObjectMapper().reader().forType(Joke.class).readValue(s);
@@ -42,7 +51,7 @@ public class ChuckFactsApiTest {
             }
         }).doOnNext(o -> System.out.println(o.getValue()));
 
-        Mono<String> stringMono2 = retrieve.bodyToMono(String.class);
+        Mono<String> stringMono2 = response1.bodyToMono(String.class);
         Mono<Joke> jokeMono2 = stringMono2.map(s -> {
             try {
                 return (Joke) new ObjectMapper().reader().forType(Joke.class).readValue(s);
@@ -57,10 +66,12 @@ public class ChuckFactsApiTest {
 
         Flux.interval(Duration.ofSeconds(1))
                 .flatMap(aLong -> {
-            return retrieve.bodyToMono(Joke.class);
+            return response1.bodyToMono(Joke.class);
         }).subscribe(joke -> System.out.println(joke.getValue()));
 
         Thread.sleep(5000);
+
+
         //.collectList().block();
 
     }
@@ -100,7 +111,81 @@ public class ChuckFactsApiTest {
 
     @Test
     public void testMono(){
-        Mono.just("test").doOnNext(System.out::println).subscribe();
+        //System.out.println(Mono.just("test").doOnNext(System.out::println).log().block());
+        Flux.range(1, 9).flatMap(integer -> Mono.just(integer).log()).log().subscribe(integer -> System.out.println(integer));
+
+    }
+
+    @Test
+    public void testFluxNex() throws InterruptedException {
+        Flux.interval(Duration.ofSeconds(1)).take(10).log().subscribe(aLong -> System.out.println(aLong));
+        Thread.sleep(10000);
+    }
+
+    @Test
+    public void testFilterFlux(){
+
+        Flux<String> filter = Flux.fromStream(Stream.<String>of("123,", "ezfoizjefoize",
+                                                                "zefpkozepofkezpofk",
+                                                                "ezfpkpzeofkopkezfopzekfpokzef"))
+                .filter(s -> s.length() > 6);
+
+        StepVerifier.create(filter)
+                .expectNextCount(10)
+                .expectNext("ezfoizjefoize")
+                .expectComplete();
+
+        StepVerifier
+                .withVirtualTime(() -> Mono.delay(Duration.ofHours(3)))
+                .expectSubscription()
+                .expectNoEvent(Duration.ofHours(2))
+                .thenAwait(Duration.ofHours(1))
+                .expectNextCount(1)
+                .expectComplete()
+                .verify();
+
+    }
+
+    @Test
+    public void testFlatMap() throws InterruptedException {
+
+        Flux<String> stringFlux =
+                Flux.range(1, 5)
+                .window(2)
+                .flatMap(integerFlux -> integerFlux.flatMap(this::getDataForFlapMap))
+                //                        .subscribeOn(Schedulers.parallel()))
+                //.flatMap(this::getDataForFlapMap)
+                //.subscribeOn(Schedulers.parallel())
+                //.map(integer -> integer * integer)
+                .log();
+
+                stringFlux.subscribe(s -> System.out.println(s));
+
+     //   StepVerifier.create(stringFlux).expectNextCount(5).verifyComplete();
+        //Thread.sleep(5000);
+
+        /*
+        Flux.range(1, 5)
+                .map(i -> i * i )
+                .log()
+                .subscribe(System.out::println);
+
+         */
+    }
+
+    private Mono<String>  getDataForFlapMap(Integer i){
+        Map<Integer, String> m = Map.of(1, "totot",
+                                        2, "titi",
+                                        3, "tutu",
+                                        4, "tata",
+                                        5, "tete",
+                                        6, "pepe");
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return Mono.just(m.getOrDefault(i, "default value"));
     }
 
     @Test
