@@ -1,14 +1,34 @@
 package com.jdhalleine.tuto;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class RomanNumberTranslatorTest {
 
+    @BeforeEach
+    public void init(){
+        RomanNumberTranslator.ret=0;
+    }
+
     @Test
     public void emptyStringShouldReturnZero(){
        Assertions.assertEquals(0, RomanNumberTranslator.translate(""));
+    }
 
+    @Test
+    public void IShouldReturnOneRecursiveStyle(){
+        Assertions.assertEquals(1, RomanNumberTranslator.translateV2("I"));
+    }
+
+    @Test
+    public void IIShouldReturnTwoRecursiveStyle(){
+        Assertions.assertEquals(2, RomanNumberTranslator.translateV2("II"));
+    }
+
+    @Test
+    public void XIShouldReturnElevenRecursiveStyle(){
+        Assertions.assertEquals(11, RomanNumberTranslator.translateV2("XI"));
     }
 
     @Test
@@ -40,6 +60,12 @@ public class RomanNumberTranslatorTest {
     public void ivShouldReturn4(){
         Assertions.assertEquals(4, RomanNumberTranslator.translate("IV"));
     }
+
+    @Test
+    public void ivShouldReturn4RecursiveStyle(){
+        Assertions.assertEquals(4, RomanNumberTranslator.translateV2("IV"));
+    }
+
     @Test
     public void XLShouldReturn40(){
         Assertions.assertEquals(40, RomanNumberTranslator.translate("XL"));
@@ -48,6 +74,11 @@ public class RomanNumberTranslatorTest {
     @Test
     public void xviShouldReturnSixteen(){
         Assertions.assertEquals(16, RomanNumberTranslator.translate("XVI"));
+    }
+
+    @Test
+    public void xviShouldReturnSixteenRecursiveStyle(){
+        Assertions.assertEquals(16, RomanNumberTranslator.translateV2("XVI"));
     }
 
 
