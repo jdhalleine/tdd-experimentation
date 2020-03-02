@@ -2,6 +2,7 @@ package com.jdhalleine.tuto;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpMethod;
 import org.springframework.util.function.SupplierUtils;
@@ -216,7 +217,7 @@ public class ChuckFactsApiTest {
 
     @Test
     public void testMonoNew(){
-
+        Assert.assertTrue(true);
     }
 
 
